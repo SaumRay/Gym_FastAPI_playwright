@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gym Workout Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #0a0a0a;
+      --surface:  #111111;
+      --surface2: #1a1a1a;
+      --border:   #222222;
+      --accent:   #ff4d00;
+      --accent2:  #ff8c00;
+      --text:     #f0f0f0;
+      --muted:    #555;
+      --success:  #00c853;
+      --chest:    #ff4d00;
+      --legs:     #7c4dff;
+      --back:     #00bcd4;
+      --shoulders:#ff9800;
+      --arms:     #e91e63;
+      --cardio:   #00e676;
+      --core:     #ffeb3b;
+      --other:    #607d8b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      letter-spacing: 3px;
+      color: var(--text);
+    }
+    header h1 span { color: var(--accent); }
+    .live-badge {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--success);
+      border: 1px solid var(--success);
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+    .live-badge::before { content: '● '; }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 28px;
+      padding: 32px 40px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* ── Form ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 5px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    select option { background: var(--surface2); }
+    textarea { resize: vertical; min-height: 60px; }
+
+    .btn-log {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      margin-top: 4px;
+    }
+    .btn-log:hover { opacity: .88; }
+    .btn-log:active { transform: scale(.98); }
+    .btn-log:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* ── Stats row ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .stat-label {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      color: var(--text);
+      line-height: 1;
+    }
+    .stat-value.fire { color: var(--accent); }
+
+    /* ── Date + filters ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .date-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      outline: none;
+    }
+    .date-input:focus { border-color: var(--accent); }
+    .filter-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 500; }
+
+    /* ── Workout cards ── */
+    .workout-list { display: flex; flex-direction: column; gap: 10px; }
+    .workout-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--cat-color, var(--accent));
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      animation: fadeUp .2s ease;
+      transition: border-color .2s;
+    }
+    .workout-card:hover { border-color: var(--cat-color, var(--accent)); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    .workout-info { flex: 1; min-width: 0; }
+    .workout-name {
+      font-size: 15px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .workout-stats {
+      display: flex;
+      gap: 12px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+    .ws-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .ws-chip span { color: var(--text); font-weight: 500; }
+    .cat-badge {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--surface2);
+      color: var(--cat-color, var(--accent));
+      border: 1px solid var(--cat-color, var(--accent));
+      flex-shrink: 0;
+    }
+    .btn-del {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 5px 7px;
+      border-radius: 6px;
+      transition: color .2s, background .2s;
+      flex-shrink: 0;
+    }
+    .btn-del:hover { color: var(--accent); background: rgba(255,77,0,.1); }
+
+    .empty {
+      text-align: center;
+      padding: 56px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .empty .icon { font-size: 40px; margin-bottom: 12px; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      opacity: 0;
+      transition: all .25s;
+      pointer-events: none;
+      z-index: 99;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.ok  { border-color: var(--success); color: var(--success); }
+    #toast.err { border-color: var(--accent);  color: var(--accent);  }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; padding: 20px; }
+      header { padding: 18px 20px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>GYM <span>TRACKER</span></h1>
+  <span class="live-badge">API LIVE</span>
+</header>
+
+<div class="layout">
+
+  <!-- ── Left: Log workout form ── -->
+  <aside>
+    <div class="card">
+      <p class="card-title">// log workout</p>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Exercise Name</label>
+          <input id="f-name" type="text" placeholder="e.g. Bench Press" />
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="f-category">
+            <option value="chest">🔥 Chest</option>
+            <option value="legs">🦵 Legs</option>
+            <option value="back">🏋️ Back</option>
+            <option value="shoulders">💪 Shoulders</option>
+            <option value="arms">💪 Arms</option>
+            <option value="cardio">🏃 Cardio</option>
+            <option value="core">⚡ Core</option>
+            <option value="other">🔹 Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input id="f-date" type="date" />
+        </div>
+        <div class="form-group">
+          <label>Sets</label>
+          <input id="f-sets" type="number" min="1" placeholder="e.g. 4" />
+        </div>
+        <div class="form-group">
+          <label>Reps</label>
+          <input id="f-reps" type="number" min="1" placeholder="e.g. 10" />
+        </div>
+        <div class="form-group">
+          <label>Weight (kg)</label>
+          <input id="f-weight" type="number" min="0" step="0.5" placeholder="e.g. 80" />
+        </div>
+        <div class="form-group">
+          <label>Duration (mins)</label>
+          <input id="f-duration" type="number" min="1" placeholder="e.g. 30" />
+        </div>
+        <div class="form-group full">
+          <label>Notes</label>
+          <textarea id="f-notes" placeholder="e.g. Felt strong today, new PR!"></textarea>
+        </div>
+      </div>
+      <button class="btn-log" id="log-btn" onclick="logWorkout()">LOG WORKOUT</button>
+    </div>
+  </aside>
+
+  <!-- ── Right: Stats + workouts ── -->
+  <div class="right">
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Today's Sets</div>
+        <div class="stat-value fire" id="stat-sets">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Exercises</div>
+        <div class="stat-value" id="stat-count">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Volume (kg)</div>
+        <div class="stat-value" id="stat-volume">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Top Muscle</div>
+        <div class="stat-value" id="stat-top" style="font-size:18px;padding-top:4px">—</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input type="date" class="date-input" id="filter-date" onchange="filterByDate(this.value)" />
+      <button class="filter-btn active" data-cat="all"       onclick="setFilter(this,'all')">All</button>
+      <button class="filter-btn" data-cat="chest"     onclick="setFilter(this,'chest')">Chest</button>
+      <button class="filter-btn" data-cat="legs"      onclick="setFilter(this,'legs')">Legs</button>
+      <button class="filter-btn" data-cat="back"      onclick="setFilter(this,'back')">Back</button>
+      <button class="filter-btn" data-cat="cardio"    onclick="setFilter(this,'cardio')">Cardio</button>
+      <button class="filter-btn" data-cat="core"      onclick="setFilter(this,'core')">Core</button>
+    </div>
+
+    <!-- Workout list -->
+    <div class="card">
+      <p class="card-title">// workouts</p>
+      <div class="workout-list" id="workout-list">
+        <div class="empty"><div class="icon">🏋️</div>Loading workouts...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const API = '/api/workouts';
+  let allWorkouts  = [];
+  let activeFilter = 'all';
+  let activeDateFilter = '';
+
+  const catColors = {
+    chest:'#ff4d00', legs:'#7c4dff', back:'#00bcd4',
+    shoulders:'#ff9800', arms:'#e91e63', cardio:'#00e676',
+    core:'#ffeb3b', other:'#607d8b'
+  };
+  const catEmoji = {
+    chest:'🔥', legs:'🦵', back:'🏋️', shoulders:'💪',
+    arms:'💪', cardio:'🏃', core:'⚡', other:'🔹'
+  };
+
+  // Defaults
+  document.getElementById('f-date').value       = today();
+  document.getElementById('filter-date').value  = today();
+
+  function today() { return new Date().toISOString().split('T')[0]; }
+
+  // ── Fetch ──────────────────────────────────────────────
+  async function fetchWorkouts() {
+    try {
+      const res   = await fetch(API);
+      allWorkouts = await res.json();
+      renderList();
+      fetchSummary();
+    } catch {
+      toast('Cannot reach API server', 'err');
+    }
+  }
+
+  async function fetchSummary() {
+    try {
+      const res  = await fetch(`/api/summary?date=${today()}`);
+      const data = await res.json();
+      document.getElementById('stat-count').textContent  = data.total_workouts;
+      document.getElementById('stat-volume').textContent = data.total_volume_kg;
+
+      const totalSets = allWorkouts
+        .filter(w => w.workout_date === today())
+        .reduce((s, w) => s + (w.sets || 0), 0);
+      document.getElementById('stat-sets').textContent = totalSets;
+
+      const top = Object.entries(data.by_category).sort((a,b)=>b[1]-a[1])[0];
+      document.getElementById('stat-top').textContent = top
+        ? `${catEmoji[top[0]] || '🔹'} ${top[0]}`
+        : '—';
+    } catch {}
+  }
+
+  // ── Log workout ────────────────────────────────────────
+  async function logWorkout() {
+    const name     = document.getElementById('f-name').value.trim();
+    const category = document.getElementById('f-category').value;
+    const sets     = parseInt(document.getElementById('f-sets').value)     || null;
+    const reps     = parseInt(document.getElementById('f-reps').value)     || null;
+    const weight   = parseFloat(document.getElementById('f-weight').value) || null;
+    const duration = parseInt(document.getElementById('f-duration').value) || null;
+    const notes    = document.getElementById('f-notes').value.trim()       || null;
+    const date     = document.getElementById('f-date').value;
+
+    if (!name) return toast('Enter exercise name', 'err');
+
+    const btn = document.getElementById('log-btn');
+    btn.disabled = true;
+    btn.textContent = 'LOGGING...';
+
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, category, sets, reps, weight_kg: weight, duration_mins: duration, notes, workout_date: date })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        return toast(err.detail || 'Failed', 'err');
+      }
+      toast(`✓ ${name} logged!`, 'ok');
+      document.getElementById('f-name').value     = '';
+      document.getElementById('f-sets').value     = '';
+      document.getElementById('f-reps').value     = '';
+      document.getElementById('f-weight').value   = '';
+      document.getElementById('f-duration').value = '';
+      document.getElementById('f-notes').value    = '';
+      fetchWorkouts();
+    } catch {
+      toast('Server error', 'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'LOG WORKOUT';
+    }
+  }
+
+  // ── Delete ─────────────────────────────────────────────
+  async function deleteWorkout(id, name) {
+    await fetch(`${API}/${id}`, { method: 'DELETE' });
+    toast(`Deleted ${name}`, 'ok');
+    fetchWorkouts();
+  }
+
+  // ── Render ─────────────────────────────────────────────
+  function renderList() {
+    const list = document.getElementById('workout-list');
+    let filtered = [...allWorkouts];
+
+    if (activeDateFilter) filtered = filtered.filter(w => w.workout_date === activeDateFilter);
+    if (activeFilter !== 'all') filtered = filtered.filter(w => w.category === activeFilter);
+
+    filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="icon">🏋️</div>No workouts logged${activeDateFilter ? ' for this date' : ''}.<br/>Use the form to log your first set!</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(w => {
+      const color = catColors[w.category] || catColors.other;
+      const chips = [
+        w.sets        ? `sets <span>${w.sets}</span>`               : null,
+        w.reps        ? `reps <span>${w.reps}</span>`               : null,
+        w.weight_kg   ? `weight <span>${w.weight_kg}kg</span>`      : null,
+        w.duration_mins ? `duration <span>${w.duration_mins}m</span>` : null,
+        w.notes       ? `notes <span>${esc(w.notes.slice(0,30))}${w.notes.length>30?'…':''}</span>` : null,
+      ].filter(Boolean);
+
+      return `
+        <div class="workout-card" style="--cat-color:${color}" data-testid="workout-${w.id}">
+          <div class="workout-info">
+            <div class="workout-name" data-testid="workout-name-${w.id}">${esc(w.name)}</div>
+            <div class="workout-stats">
+              ${chips.map(c => `<span class="ws-chip">${c}</span>`).join('')}
+              <span class="ws-chip">${w.workout_date}</span>
+            </div>
+          </div>
+          <span class="cat-badge" style="--cat-color:${color}">${catEmoji[w.category]||'🔹'} ${w.category}</span>
+          <button class="btn-del" data-testid="delete-${w.id}" onclick="deleteWorkout('${w.id}','${esc(w.name)}')">✕</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function setFilter(btn, cat) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = cat;
+    renderList();
+  }
+
+  function filterByDate(val) {
+    activeDateFilter = val;
+    renderList();
+  }
+
+  let toastTimer;
+  function toast(msg, type = 'ok') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = `show ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.className = '', 3000);
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  document.getElementById('f-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') logWorkout();
+  });
+
+  fetchWorkouts();
+</script>
+</body>
+</html>
