@@ -12,32 +12,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ── 1. Checkout code ──────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ── 2. Setup Python ───────────────────────────────
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
+      # ── 3. Install dependencies ───────────────────────
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # ── 4. Install Playwright browsers ───────────────
       - name: Install Playwright browsers
         run: playwright install --with-deps chromium
 
+      # ── 5. Start FastAPI server in background ─────────
       - name: Start FastAPI server
-        run: uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-        
-      - name: Wait for server to be ready
-        run: sleep 3
+        run: uvicorn main:app --host 0.0.0.0 --port 8000 &
 
-      - name: Run all Playwright tests
-        run: pytest tests/ -v --tb=short
+      # ── 6. Wait for server to be ready ────────────────
+      - name: Wait for server
+        run: |
+          for i in {1..10}; do
+            curl -sf http://localhost:8000/ && break
+            echo "Waiting... attempt $i"
+            sleep 2
+          done
+
+      # ── 7. Run all Playwright tests ───────────────────
+      - name: Run Playwright tests
+        run: pytest test_gym.py -v --tb=short
         env:
           CI: true
 
-      - name: Upload test report
+      # ── 8. Upload test results (always, even on fail) ─
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
